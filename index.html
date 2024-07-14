@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supermarket Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        #map {
+            height: 100vh;
+        }
+        .legend {
+            background: white;
+            padding: 10px;
+            line-height: 1.5;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="supermarkets.js"></script>
+    <script>
+        // Initialize the map
+        var map = L.map('map').setView([-0.717178, 36.431026], 10);
+
+        // Add tile layers
+        var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        var Stadia_StamenWatercolor = L.tileLayer('https://tiles.stadiamaps.com/tiles/stamen_watercolor/{z}/{x}/{y}.{ext}', {
+            minZoom: 1,
+            maxZoom: 16,
+            attribution: '&copy; <a href="https://www.stadiamaps.com/" target="_blank">Stadia Maps</a> &copy; <a href="https://www.stamen.com/" target="_blank">Stamen Design</a> &copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            ext: 'jpg'
+        });
+
+        var Esri_WorldImagery = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+        });
+
+        // Layer control
+        var baseMaps = {
+            "OpenStreetMap": osm,
+            "Stamen Watercolor": Stadia_StamenWatercolor,
+            "Imagery": Esri_WorldImagery
+        };
+
+        L.control.layers(baseMaps).addTo(map);
+
+        // Add supermarket vector layer with popups
+        var supermarketLayer = L.geoJSON(supermarket, {
+            onEachFeature: function (feature, layer) {
+                var popupContent = "<b>Supermarket: </b>" + feature.properties.name + "<br>" +
+                                   "<b>Street: </b>" + feature.properties["addr:street"] + "<br>" +
+                                   "<b>City: </b>" + feature.properties["addr:city"];
+                layer.bindPopup(popupContent);
+            }
+        }).addTo(map);
+
+        // Add legend
+        var legend = L.control({ position: 'bottomright' });
+
+        legend.onAdd = function (map) {
+            var div = L.DomUtil.create('div', 'legend');
+            div.innerHTML += "<h4>Legend</h4>";
+            div.innerHTML += '<i style="background: #3388ff"></i> Supermarkets<br>';
+            return div;
+        };
+
+        legend.addTo(map);
+    </script>
+</body>
+</html>
